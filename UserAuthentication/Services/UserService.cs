@@ -26,16 +26,15 @@ namespace UserAuthentication.Services
             GenericApiResponse<RegistrationTable> result = new GenericApiResponse<RegistrationTable>();
             try
             {
-                Encryption encypt = new Encryption();
+                Encryption encrypt = new Encryption();
                 //check if the user is existing
                 RegistrationTable details = await _userReg.FetchRecord(m => m.Email == reg.Email);
 
                 //if it returns no record, then it means the user is a not existing
                 if (details == null)
                 {
-                    reg.Password = encypt.ConvertToEncrypt(reg.Password);
+                    reg.Password = encrypt.ConvertToEncrypt(reg.Password);
                     reg.DateCreated = DateTime.Now;
-                    //string bb = encypt.ConvertToDecrypt(reg.Password);
                     await _userReg.Add(reg);
                     result.ResponseCode = ResponseCodes.Success;
                     result.ResponseDescription = "You have registered suceessfully, kindly login to proceed. Thank you.";
@@ -64,7 +63,7 @@ namespace UserAuthentication.Services
             {
                 //check if the user is existing
                 RegistrationTable details = await _userReg.FetchRecord(m => m.Email == reg.Email);
-                string bb = encrypt.ConvertToDecrypt(details.Password);
+                Encryption encrypt = new Encryption();
                 //if it returns no record, then it means the user is a not existing
                 if (details != null && encrypt.ConvertToDecrypt(details.Password) == reg.Password)
                 {
