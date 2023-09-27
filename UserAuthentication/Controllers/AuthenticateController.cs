@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
+using System.Text.RegularExpressions;
 using UserAuthentication.Entities;
 using UserAuthentication.Interface;
 using UserAuthentication.Models;
@@ -36,13 +38,28 @@ namespace UserAuthentication.Controllers
             
             if (ModelState.IsValid)
             {
+                GenericApiResponse<RegistrationTable> result = new GenericApiResponse<RegistrationTable>();
+                var pattern = @"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";
 
-                RegistrationTable request = new RegistrationTable();
-                request.UserName = reg.UserName;
-                request.Email = reg.Email;
-                request.Password = reg.Password;
-                GenericApiResponse<RegistrationTable> result = await _userService.UserReg(request);
-                return Ok(result);
+                var regex = new Regex(pattern);
+                bool email = regex.IsMatch(reg.Email);
+                if (email)
+                {
+                    RegistrationTable request = new RegistrationTable();
+                    request.UserName = reg.UserName;
+                    request.Email = reg.Email;
+                    request.Password = reg.Password;
+                    result = await _userService.UserReg(request);
+                    return Ok(result);
+                }
+                else
+                {
+                    result.ResponseCode = ResponseCodes.Failure;
+                    result.ResponseDescription = "Kindly input your correct email address";
+                    return Ok(result);
+                }
+
+               
             }
             else
             {
